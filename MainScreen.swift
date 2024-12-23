@@ -12,13 +12,22 @@ struct MainScreen: View {
     @ObservedObject var router: Router
     @ObservedObject var viewModel: ListViewModel
 
+    @State private var textFieldText = "Test"
+
     private let selectedItem: String = "🍒"
 
     var body: some View {
-        Button(action: {
-            router.goToSecondTabAndOpenItem(withTitle: selectedItem, viewModel: viewModel)
-        }) {
-            Text(selectedItem).font(.system(size: 250))
+        VStack {
+            UITextFieldWrapper(text: $textFieldText)
+                            .frame(height: 50)
+                            .padding(90)
+            Text(textFieldText)
+
+            Button(action: {
+                router.goToSecondTabAndOpenItem(withTitle: selectedItem, viewModel: viewModel)
+            }) {
+                Text(selectedItem).font(.system(size: 250))
+            }
         }
     }
 }
