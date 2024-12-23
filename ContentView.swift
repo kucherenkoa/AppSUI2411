@@ -7,22 +7,19 @@
 
 import SwiftUI
 
-enum TabSelection: Hashable {
-    case main
-    case list
-    case profile
-}
-
 struct ContentView: View {
-    @State var tabSelection: TabSelection = .main
+
+    @StateObject var viewModel: ListViewModel = ListViewModel()
+    @StateObject var router: Router = Router(selectedTab: .main)
+
     var body: some View {
-        TabView(selection: $tabSelection) {
-            MainScreen(tabSelection: $tabSelection)
+        TabView(selection: $router.selectedTab) {
+            MainScreen(router: router, viewModel: viewModel)
                 .tag(TabSelection.main)
                 .tabItem {
                     Label("Main", systemImage: "house")
                 }
-            ListScreen()
+            ListScreen(viewModel: viewModel)
                 .tag(TabSelection.list)
                 .tabItem {
                     Label("List", systemImage: "list.clipboard")

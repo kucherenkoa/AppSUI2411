@@ -8,12 +8,17 @@
 import SwiftUI
 
 struct MainScreen: View {
-    @Binding var tabSelection: TabSelection
+
+    @ObservedObject var router: Router
+    @ObservedObject var viewModel: ListViewModel
+
+    private let selectedItem: String = "🍒"
+
     var body: some View {
         Button(action: {
-            tabSelection = .list
+            router.goToSecondTabAndOpenItem(withTitle: selectedItem, viewModel: viewModel)
         }) {
-            Text("🍒").font(.system(size: 250))
+            Text(selectedItem).font(.system(size: 250))
         }
     }
 }

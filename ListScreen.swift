@@ -8,18 +8,24 @@
 
 import SwiftUI
 
-struct Food: Identifiable {
-
+struct Food: Identifiable, Hashable {
     let id: Int = UUID().hashValue
     let name: String
     let isFave: Bool
-    var isSelected: Bool = false
 
+    static func == (lhs: Food, rhs: Food) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 final class ListViewModel: ObservableObject {
 
     @Published var favoritesOnly: Bool = false
+    @Published var selectedItem: Food? = nil
 
     @Published var foods: [Food] = [
         .init(name: "🍏", isFave: true),
@@ -33,12 +39,11 @@ final class ListViewModel: ObservableObject {
 
 struct ListScreen: View {
 
-    @StateObject var viewModel: ListViewModel = .init()
+    @ObservedObject var viewModel: ListViewModel
 
     var body: some View {
         NavigationView {
-            FoodlistView()
-                .environmentObject(viewModel)
+            FoodlistView(viewModel: viewModel)
                 .navigationTitle("Foods")
         }
     }
@@ -47,23 +52,28 @@ struct ListScreen: View {
 
 struct FoodlistView: View {
 
-    @EnvironmentObject var viewModel: ListViewModel
+    @ObservedObject var viewModel: ListViewModel
     @State var toggleText: String = "Favorites Only"
 
     var body: some View {
         VStack {
-            FoodFilterView(toggleText: $toggleText)
+            FoodFilterView(toggleText: $toggleText, viewModel: viewModel)
+
             List(viewModel.foods) { item in
                 let showItem = viewModel.favoritesOnly ? item.isFave : true
 
                 switch showItem {
-                case true:
-                    NavigationLink(destination: FoodScreen(title: item.name)) {
-                        Text(item.name)
-                            .font(.system(size: 80))
-                    }
-                case false:
-                    EmptyView()
+                    case true:
+                        NavigationLink(
+                            destination: FoodScreen(title: item.name),
+                            tag: item,
+                            selection: $viewModel.selectedItem
+                        ) {
+                            Text(item.name)
+                                .font(.system(size: 80))
+                        }
+                    case false:
+                        EmptyView()
                 }
             }
         }
@@ -73,7 +83,7 @@ struct FoodlistView: View {
 struct FoodFilterView: View {
 
     @Binding var toggleText: String
-    @EnvironmentObject var viewModel: ListViewModel
+    @ObservedObject var viewModel: ListViewModel
 
     var body: some View {
         Toggle(isOn: $viewModel.favoritesOnly) {
@@ -85,14 +95,10 @@ struct FoodFilterView: View {
 }
 
 struct FoodScreen: View {
-
+    
     var title: String
 
     var body: some View {
         Text(title).font(.system(size: 250))
     }
-}
-
-#Preview {
-    ListScreen()
 }
